@@ -1,0 +1,15 @@
+*.pyc
+*.cache
+*~
+selenium/.settings
+selenium/.project
+selenium/.pydevproject
+selenium/logs/*
+testrunner/browser/logs/*
+*.sqlite3
+.idea
+*.egg-info
+.ipynb_checkpoints
+build
+dist
+ghostdriver.log
