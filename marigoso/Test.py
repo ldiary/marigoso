@@ -1,14 +1,18 @@
+# External Package dependencies
+import requests
+from selenium.webdriver import Firefox, Ie, PhantomJS, Chrome, Safari, DesiredCapabilities
+from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
+
+# Python built-in Packages
 import types
 import os
 import sys
 import inspect
 import importlib
-import requests
 import configparser
 import pprint
 
-from selenium.webdriver import Firefox, Ie, PhantomJS, Chrome, Safari, DesiredCapabilities
-from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
+# Internal Modules
 from . import Python, Browser, Api
 
 
