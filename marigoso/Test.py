@@ -151,6 +151,7 @@ class Test(object):
         else:
             print("Please specify which browser to launch.")
             assert 'browser' in request
+        return self.browser
 
     def register_function(self, attr_name, functions):
         for func in functions:

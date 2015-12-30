@@ -43,7 +43,7 @@ def get_element(self, coordinate, child=None, _all=None, timeout=TIMEOUT):
             method.__name__, locator, timeout, status), status=status)
 
     def get_children(_self, coordinate, timeout=TIMEOUT):
-        return _self.get_child(coordinate, all=True, timeout=timeout)
+        return _self.get_child(coordinate, _all=True, timeout=timeout)
 
     if isinstance(coordinate, str):
         if "=" not in coordinate:
@@ -92,6 +92,7 @@ class DOM(PurePython):
         return self.get_element(coordinate, _all=True, timeout=timeout)
 
     def get_element(self, coordinate, child=None, _all=None, timeout=TIMEOUT):
+        # We're using '_all' instead of the Python keyword 'all'
         return get_element(self, coordinate, child, _all, timeout)
 
     def is_available(self, coordinate, timeout=TIMEOUT):
