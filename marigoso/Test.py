@@ -73,6 +73,7 @@ class Test(object):
         self.api._requests = requests
         self.api.pp = self.pp
         self.register_modules("api", [Python, Api])
+        return self.api
 
     def launch_browser(self, request=None):
         request = request or self.request

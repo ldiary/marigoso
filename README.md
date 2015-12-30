@@ -107,26 +107,26 @@ test = Test()
 
 Use the browser testing tool.
 ```
-test.launch_browser("Firefox")
-test.browser.get_url("http://pytestuk.blogspot.co.uk/2015/11/testing.html")
-test.browser.press_available("id=cookieChoiceDismiss")
-iframe = test.browser.get_element("css=div#bc_0_0T_box iframe")
-test.browser.switch_to.frame(iframe)
-test.browser.kb_type("id=commentBodyField", "An example of Selenium automation in Python.")
-test.browser.select_text("id=identityMenu", "Google Account")
-test.browser.submit_btn("Publish")
-test.browser.quit()
+browser = test.launch_browser("Firefox")
+browser.get_url("http://pytestuk.blogspot.co.uk/2015/11/testing.html")
+browser.press_available("id=cookieChoiceDismiss")
+iframe = browser.get_element("css=div#bc_0_0T_box iframe")
+browser.switch_to.frame(iframe)
+browser.kb_type("id=commentBodyField", "An example of Selenium automation in Python.")
+browser.select_text("id=identityMenu", "Google Account")
+browser.submit_btn("Publish")
+browser.quit()
 ```
 Browser tool offers convenient functions for handling [Selenium](http://seleniumhq.github.io/selenium/docs/api/py/) Python bindings.
 
 
 Use the API testing tool.
 ```
-test.enable_api()
-test.api.host = "https://your.api.host.net"
-test.api.session.auth = ('my_username', 'my_password')
-response = test.api.get_request("/your/api/route")
-test.api.check_fields(['field1', 'field2'], response)
+api = test.enable_api()
+api.host = "https://your.api.host.net"
+api.session.auth = ('my_username', 'my_password')
+response = api.get_request("/your/api/route")
+api.check_fields(['field1', 'field2'], response)
 ```
 API tool offers convenient functions for handling [Requests](http://docs.python-requests.org/en/latest/) Python module.
 
