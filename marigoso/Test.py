@@ -149,10 +149,11 @@ class Test(object):
 
                 class Mixin(Safari, Browser.BrowsingActions): pass
                 self.browser = Mixin(selenium_server)
-        else:
-            print("Please specify which browser to launch.")
-            assert 'browser' in request
-        return self.browser
+            return self.browser
+
+        print("Please specify which browser to launch.")
+        assert 'browser' in request
+
 
     def register_function(self, attr_name, functions):
         for func in functions:

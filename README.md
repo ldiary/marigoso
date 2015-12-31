@@ -1,12 +1,10 @@
-Simpler Selenium
-================
-You can use Selenium functions to automatically interact with the web elements being rendered in a browser.
-However, some of these Selenium functions have too long names and are pretty much confusing. 
+Marigoso
+========
+Is a collection of tools (or alternative functions) that you can use in your automated functional tests, API tests and
+security testing.
 
-Therefore, instead of using Selenium directly, you can use Marigoso as a layer on top of Selenium. Marigoso gives you
-more convenient functions so you don't need to remember long Selenium function names.
-
-Instead of coding like this:
+For example, if you are using Selenium in your automated functional tests,
+instead of coding directly in Selenium like this:
 ```
 from selenium import webdriver
 browser = webdriver.Firefox()
@@ -16,11 +14,9 @@ download.click()
 download = browser.find_element_by_id('downloads')
 ul = download.find_element_by_tag_name('ul')
 lis = ul.find_elements_by_tag_name('li')
-for index, li in enumerate(lis):
-    print("{}: {}".format(index, li.text))
 ```
 
-You can make your code look a little better like this:
+You can alternatively use Marigoso functions to help you code a little bit better like this:
 ```
 from marigoso import Test
 browser = Test().launch_browser('Firefox')
@@ -29,9 +25,11 @@ browser.press('Downloads')
 download = browser.get_element('id=downloads')
 ul = download.get_child('tag=ul')
 lis = ul.get_children('tag=li')
-for index, li in enumerate(lis):
-    print("{}: {}".format(index, li.text))
 ```
+
+Listed below are some of the functions provided by Marigoso and their equivalent functions in Selenium. Since Marigoso
+is just a layer that sits on top of Selenium, you can still use Selenium functions while taking advantage of the
+alternative functions provided by Marigoso.
 
 Getting a Single Web Element from a Web Page
 
