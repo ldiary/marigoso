@@ -14,6 +14,7 @@ import pprint
 
 # Internal Modules
 from . import Python, Browser, Api, Notebook
+sys.meta_path.append(Notebook.NotebookFinder())
 
 
 class Test(object):
@@ -22,7 +23,6 @@ class Test(object):
         self.data = Python.MutantDictionary()
         self.request = request
         self.pp = pprint.PrettyPrinter(indent=4)
-        sys.meta_path.append(Notebook.NotebookFinder())
 
     def setup_django_models(self, request=None):
         request = request or self.request

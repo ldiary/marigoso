@@ -144,3 +144,4 @@ Tutorials
 =========
 [Using Marigoso to Post a Comment in Blogger](https://github.com/ldiary/marigoso/blob/master/notes/using_marigoso_to_post_a_comment_in_blogger_post.ipynb)
 [Using Jupyter to Document and Automate BDD Style Tests](https://github.com/ldiary/marigoso/blob/master/notes/an_example_of_using_jupyter_for_documenting_and_automating_bdd_style_tests.ipynb)
+[Handling Select2 Controls in Selenium WebDriver](https://github.com/ldiary/marigoso/blob/master/notes/handling_select2_controls_in_selenium_webdriver.ipynb)
