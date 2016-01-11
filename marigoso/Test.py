@@ -13,8 +13,7 @@ import configparser
 import pprint
 
 # Internal Modules
-from . import Python, Browser, Api, Notebook
-sys.meta_path.append(Notebook.NotebookFinder())
+from . import Python, Browser, Api
 
 
 class Test(object):

@@ -1,3 +1,12 @@
+"""
+To use this module:
+
+import sys
+from marigoso import NotebookImport
+sys.meta_path.append(NotebookImport.NotebookFinder())
+
+Then you will be able to import Jupyter Notebooks as if they are ordinary Python modules
+"""
 import io
 import os
 import sys
