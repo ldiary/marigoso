@@ -1,4 +1,7 @@
-import io, os, sys, types
+import io
+import os
+import sys
+import types
 import nbformat
 from IPython.core.interactiveshell import InteractiveShell
 
