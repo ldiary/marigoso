@@ -5,7 +5,9 @@ import sys
 from marigoso import NotebookImport
 sys.meta_path.append(NotebookImport.NotebookFinder())
 
-Then you will be able to import Jupyter Notebooks as if they are ordinary Python modules
+Then you will be able to import Jupyter Notebooks as if they are ordinary Python modules.
+TODO: These NotebookLoader and NotebookFinder use the deprecated load_module and find_module
+methods. Consider upgrading them to the new import system in Python 3.5.
 """
 import io
 import os
@@ -44,9 +46,6 @@ class NotebookLoader(object):
     def load_module(self, fullname):
         """import a notebook as a module"""
         path = find_notebook(fullname, self.path)
-
-        print ("importing IPython notebook from %s" % path)
-
         # load the notebook object
         with io.open(path, 'r', encoding='utf-8') as f:
             nb = nbformat.read(f, 4)
@@ -79,10 +78,12 @@ class NotebookLoader(object):
 
 class NotebookFinder(object):
     """Module finder that locates IPython Notebooks"""
-    def __init__(self):
+    def __init__(self, path=None):
         self.loaders = {}
+        self.path = path
 
     def find_module(self, fullname, path=None):
+        path = path or self.path
         nb_path = find_notebook(fullname, path)
         if not nb_path:
             return
