@@ -39,7 +39,7 @@ def get_element(self, coordinate, child=None, _all=None, timeout=TIMEOUT):
             except (NoSuchElementException, StaleElementReferenceException) as e:
                 status = "Not Found" if isinstance(e, NoSuchElementException) else "Stale Element"
             _self.wait(1)
-        raise MarigosoException("wait_for({}, {}, {}), timeout reached; Status: {}".format(
+        raise BrowserException("wait_for({}, {}, {}), timeout reached; Status: {}".format(
             method.__name__, locator, timeout, status), status=status)
 
     def get_children(_self, coordinate, timeout=TIMEOUT):
@@ -76,13 +76,13 @@ def get_element(self, coordinate, child=None, _all=None, timeout=TIMEOUT):
                     element.get_child = types.MethodType(get_element, element)
                     element.get_children = types.MethodType(get_children, element)
                 return elements
-    raise MarigosoException("Locator: {} does not start with known by method.".format(coordinate), "Invalid Locator")
+    raise BrowserException("Locator: {} does not start with known by method.".format(coordinate), "Invalid Locator")
 
 
-class MarigosoException(Exception):
+class BrowserException(Exception):
 
     def __init__(self, message, status=None):
-        super(MarigosoException, self).__init__(message)
+        super(BrowserException, self).__init__(message)
         self.status = status
 
 
@@ -99,7 +99,7 @@ class DOM(PurePython):
         if isinstance(coordinate, str):
             try:
                 return self.get_element(coordinate, timeout)
-            except MarigosoException as e:
+            except BrowserException as e:
                 if e.status in ['Not Displayed', 'Not Found']:
                     return False
                 raise e

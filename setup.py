@@ -36,5 +36,10 @@ setup(
         'requests>=2.8.1'
     ],
     packages=["marigoso"],
+    entry_points={
+        'pytest11': [
+            'marigoso = marigoso.pytest_notebook',
+        ]
+    },
     include_package_data=True,
 )
