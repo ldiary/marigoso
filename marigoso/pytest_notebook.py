@@ -1,49 +1,59 @@
 import pytest
 import nbformat
 import ntpath
+from queue import Empty
 from jupyter_client import KernelManager
 from marigoso import Python
 
 
-def pytest_addoption(parser):
-    parser.addoption("--credentials",
-                     action="store",
-                     default=None,
-                     help="This is your Tester.Profile filename.")
-    parser.addoption("--environment",
-                     action="store",
-                     default=None,
-                     help="The set of (Environment, Region, DC, Instance, Customer, Browser) dataset.")
-
-    parser.addoption("--region",
-                     action="store",
-                     default=None,
-                     help="Resume the testing of the whole test suite.")
-
-    parser.addoption("--brand",
-                     action="store",
-                     default="TestRunner.ini",
-                     help="Test configuration and initialisation file.")
-
-    parser.addoption("--data_center",
-                     action="store",
-                     default=None,
-                     help="Name of the Test Environment")
-
-    parser.addoption("--instance",
-                     action="store",
-                     default=None,
-                     help="Name of the Dealer or Brand")
-
-    parser.addoption("--customer",
-                     action="store",
-                     default=None,
-                     help="Name of the Test Suite")
-
-    parser.addoption("--browser",
-                     action="store",
-                     default=None,
-                     help="Name of the Test Suite")
+default_options = ['assertmode',
+                  'basetemp',
+                  'cacheclear',
+                  'cacheshow',
+                  'capture',
+                  'collectonly',
+                  'color',
+                  'confcutdir',
+                  'debug',
+                  'doctest_ignore_import_errors',
+                  'doctestglob',
+                  'doctestmodules',
+                  'durations',
+                  'exitfirst',
+                  'failedfirst',
+                  'file_or_dir',
+                  'fulltrace',
+                  'genscript',
+                  'help',
+                  'ignore',
+                  'importmode',
+                  'inifilename',
+                  'junitprefix',
+                  'keyword',
+                  'lf',
+                  'markers',
+                  'markexpr',
+                  'maxfail',
+                  'noassert',
+                  'noconftest',
+                  'nomagic',
+                  'pastebin',
+                  'plugins',
+                  'pyargs',
+                  'quiet',
+                  'report',
+                  'reportchars',
+                  'resultlog',
+                  'runxfail',
+                  'showfixtures',
+                  'showlocals',
+                  'strict',
+                  'tbstyle',
+                  'traceconfig',
+                  'usepdb',
+                  'verbose',
+                  'version',
+                  'xmlpath']
 
 
 def pytest_collect_file(parent, path):
@@ -88,23 +98,11 @@ class TestScenario(pytest.File):
 
     def setup(self):
         self.km.restart_kernel()
-        credentials = "credentials = '{}'".format(self.config.getvalue('credentials'))
-        environment = "environment = '{}'".format(self.config.getvalue('environment'))
-        region = "region = '{}'".format(self.config.getvalue('region'))
-        brand = "brand = '{}'".format(self.config.getvalue('brand'))
-        data_center = "data_center = '{}'".format(self.config.getvalue('data_center'))
-        instance = "instance = '{}'".format(self.config.getvalue('instance'))
-        customer = "customer = '{}'".format(self.config.getvalue('customer'))
-        browser = "browser = '{}'".format(self.config.getvalue('browser'))
-        for params in [credentials,
-                       environment,
-                       region,
-                       brand,
-                       data_center,
-                       instance,
-                       customer,
-                       browser]:
-            self.kc.execute(params, allow_stdin=False)
+        options = self.config.option.__dict__
+        for key in options.keys():
+            if key not in default_options:
+                option = "{} = '{}'".format(key, options[key])
+                self.kc.execute(option, allow_stdin=False)
         for setup in self.test_setup:
             self.kc.execute(setup, allow_stdin=False)
 
@@ -112,10 +110,10 @@ class TestScenario(pytest.File):
         self.kc.stop_channels()
         self.km.shutdown_kernel(now=True)
 
+
 class TestException(Exception):
     """ custom exception for error reporting. """
 
-from queue import Empty
 
 class TestStep(pytest.Item):
 
@@ -138,5 +136,3 @@ class TestStep(pytest.Item):
 
         if reply['status'] == 'error':
             raise TestException(self.cell.source, '\n'.join(reply['traceback']))
-
-
