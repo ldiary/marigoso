@@ -110,6 +110,17 @@ class TestScenario(pytest.File):
         self.kc.stop_channels()
         self.km.shutdown_kernel(now=True)
 
+    def repr_failure(self, excinfo):
+        """ called when self.runtest() raises an exception. """
+        if isinstance(excinfo.value, TestException):
+            return "\n".join([
+                "TestItem execution failed",
+                "Source:\n%s\n\n"
+                "Traceback:\n%s\n" % excinfo.value.args,
+            ])
+        else:
+            return "pytest plugin exception: %s" % str(excinfo.value)
+
 
 class TestException(Exception):
     """ custom exception for error reporting. """
@@ -122,17 +133,15 @@ class TestStep(pytest.Item):
         self.cell = cell
 
     def runtest(self):
-        msg_id = self.parent.kc.execute(self.cell.source, allow_stdin=False)
+        run_id = self.parent.kc.execute(self.cell.source, allow_stdin=False)
         timeout = 540 #540seconds == 9minutes
         while True:
             try:
-                msg = self.parent.kc.get_shell_msg(block=True, timeout=timeout)
-                if msg.get("parent_header", None) and msg["parent_header"].get("msg_id", None) == msg_id:
+                reply = self.parent.kc.get_shell_msg(block=True, timeout=timeout)
+                if reply.get("parent_header", None) and reply["parent_header"].get("msg_id", None) == run_id:
                     break
             except Empty:
                 raise TestException("Timeout of %d seconds exceeded executing cell: %s" (timeout, self.cell.source))
 
-        reply = msg['content']
-
-        if reply['status'] == 'error':
-            raise TestException(self.cell.source, '\n'.join(reply['traceback']))
+        if reply['content']['status'] == 'error':
+            raise TestException(self.cell.source, '\n'.join(reply['content']['traceback']))
