@@ -12,6 +12,10 @@ import importlib
 import configparser
 import pprint
 
+from pathlib import Path, PurePath
+#TODO: convert os.path to pathlib.Path/PurePath
+#TODO: convert request['django']['path'] to request.django.path
+
 # Internal Modules
 from . import Python, Browser, Api
 
@@ -104,8 +108,8 @@ class Test(object):
                 if 'firefox' in request:
                     if 'extensions' in request['firefox']:
                         for extension in request['firefox']['extensions']:
-                            extension = os.path.join(request['firefox']['extensions_path'], extension)
-                            firefox_profile.add_extension(extension)
+                            extension = PurePath(request['firefox']['extensions_path'], extension)
+                            firefox_profile.add_extension(str(extension))
                     if 'capabilities' in request['firefox']:
                         caps.update(request['firefox']['capabilities'])
 
@@ -187,7 +191,7 @@ class Test(object):
 
     def get_django_models(self, request):
         # Setup Django
-        if request['django']['path'] not in sys.path:
+        if str(request['django']['path']) not in sys.path:
             sys.path.append(request['django']['path'])
         if not 'DJANGO_SETTINGS_MODULE' in os.environ:
             os.environ['DJANGO_SETTINGS_MODULE'] = "{}.settings".format(request['django']['name'])

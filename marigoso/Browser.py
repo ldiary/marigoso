@@ -139,6 +139,12 @@ class Mouse(DOM):
             self.press(coordinate)
 
     def select_text(self, coordinate, text, select2drop=None):
+        '''
+        :param an element or a locator of the select element
+        :param a selection text or selection index to be selected
+        :param the select2 dropdown locator
+        :return: True
+        '''
         if not isinstance(coordinate, Select):
             if isinstance(coordinate, str):
                 element = self.get_element(coordinate)
@@ -152,6 +158,10 @@ class Mouse(DOM):
             selection = coordinate
             # TODO: Can't understand why Select made it private, replace Select in the future(?)
             element = coordinate._el
+        if isinstance(text, int):
+            if select2drop is not None:
+                return self.select2(element, select2drop, text)
+            return selection.select_by_index(text)
         try:
             selection.select_by_visible_text(text)
             return True
@@ -172,6 +182,13 @@ class Mouse(DOM):
             self.select2(element, select2drop, text)
 
     def select2(self, box, drop, text):
+        '''
+        :param box: the locator for Selection Box
+        :param drop: the locator for Selection Dropdown
+        :param text: the text value to select or the index of the option to select
+        :return: True
+        :example: https://github.com/ldiary/marigoso/blob/master/notebooks/handling_select2_controls_in_selenium_webdriver.ipynb
+        '''
         if not self.is_available(drop):
             if isinstance(box, str):
                 self.get_element(box).click()
@@ -179,10 +196,14 @@ class Mouse(DOM):
                 box.click()
         ul_dropdown = self.get_element(drop)
         options = ul_dropdown.get_children('tag=li')
+        if isinstance(text, int):
+            options[text].click()
+            return True
+
         for option in options:
             if option.text == text:
                 option.click()
-                return
+                return True
         print("[Error!] Selection not found: {}".format(text))
         print("Available Selections\n {}".format([option.text for option in options]))
 
