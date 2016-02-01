@@ -107,6 +107,7 @@ class TestScenario(pytest.File):
             self.kc.execute(setup, allow_stdin=False)
 
     def teardown(self):
+        self.kc.execute("browser.quit()\n", allow_stdin=False)  # Quits any existing browser
         self.kc.stop_channels()
         self.km.shutdown_kernel(now=True)
 
