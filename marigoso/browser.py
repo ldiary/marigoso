@@ -1,5 +1,5 @@
 import types
-from .Python import PurePython
+from .abstract import BuiltIn
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
@@ -86,7 +86,7 @@ class BrowserException(Exception):
         self.status = status
 
 
-class DOM(PurePython):
+class DOM(BuiltIn):
 
     def get_all(self, coordinate, timeout=TIMEOUT):
         return self.get_element(coordinate, _all=True, timeout=timeout)

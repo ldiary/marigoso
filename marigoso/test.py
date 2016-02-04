@@ -17,20 +17,20 @@ from pathlib import Path, PurePath
 #TODO: convert request['django']['path'] to request.django.path
 
 # Internal Modules
-from . import Python, Browser, Api
+from . import abstract, browser, api
 
 
 class Test(object):
 
     def __init__(self, request=None):
-        self.data = Python.MutantDictionary()
+        self.data = abstract.MutantDictionary()
         self.request = request
         self.pp = pprint.PrettyPrinter(indent=4)
 
     def setup_django_models(self, request=None):
         request = request or self.request
         if 'django' in request:
-            self.models = Python.MutantDictionary()
+            self.models = abstract.MutantDictionary()
             self.get_django_models(request)
 
     def setup_config_parser(self, request=None):
@@ -58,17 +58,19 @@ class Test(object):
     def setup_proxy(self, request=None):
         request = request or self.request
         if 'proxy' in request:
+            pass
+            """uncomment this to enable browsermobproxy
             from browsermobproxy import Server
             self.server = Server(request['proxy'])
             self.server.start()
             self.proxy = self.server.create_proxy()
-            selenium_proxy = self.proxy.selenium_proxy()
+            selenium_proxy = self.proxy.selenium_proxy()"""
         else:
             selenium_proxy = None
         return selenium_proxy
 
     def enable_api(self, request=None):
-        self.api = Python.MutantDictionary()
+        self.api = abstract.MutantDictionary()
         self.api.session = requests.Session()
         requests.packages.urllib3.disable_warnings()
         self.api.session.headers = {'content-type': 'application/json'}
@@ -76,7 +78,7 @@ class Test(object):
         self.api.codes = requests.codes
         self.api._requests = requests
         self.api.pp = self.pp
-        self.register_modules("api", [Python, Api])
+        self.register_modules("api", [abstract, api])
         return self.api
 
     def launch_browser(self, request=None):
@@ -115,14 +117,14 @@ class Test(object):
 
                 selenium_proxy = self.setup_proxy()
 
-                class Mixin(Firefox, Browser.BrowsingActions): pass
+                class Mixin(Firefox, browser.BrowsingActions): pass
                 self.browser = Mixin(firefox_profile, proxy=selenium_proxy, capabilities=caps)
             elif request['browser'] == 'IExplorer':
                 # Not a good idea => caps['nativeEvents'] = False
                 iedriver_server = os.path.join(request['iexplorer']['server_path'],
                                                request['iexplorer']['server_file'])
 
-                class Mixin(Ie, Browser.BrowsingActions): pass
+                class Mixin(Ie, browser.BrowsingActions): pass
                 self.browser = Mixin(iedriver_server, capabilities=caps)
 
             elif request['browser'] == 'PhantomJS':
@@ -132,7 +134,7 @@ class Test(object):
                     ' 6.1; Win64; x64; rv:16.0) Gecko/20121026 Firefox/16.0'
                 )
 
-                class Mixin(PhantomJS, Browser.BrowsingActions): pass
+                class Mixin(PhantomJS, browser.BrowsingActions): pass
                 self.browser = Mixin(service_args=service_args,
                                          desired_capabilities=caps)
                 # If you don't do this, you'll get the pain:
@@ -144,14 +146,14 @@ class Test(object):
                                                    request['chrome']['server_file'])
                 os.environ["webdriver.chrome.driver"] = chromedriver_server
 
-                class Mixin(Chrome, Browser.BrowsingActions): pass
+                class Mixin(Chrome, browser.BrowsingActions): pass
                 self.browser = Mixin(chromedriver_server)
 
             elif request['browser'] == 'Safari':
                 selenium_server = os.path.join(request['safari']['server_path'],
                                                request['safari']['server_file'])
 
-                class Mixin(Safari, Browser.BrowsingActions): pass
+                class Mixin(Safari, browser.BrowsingActions): pass
                 self.browser = Mixin(selenium_server)
             return self.browser
 

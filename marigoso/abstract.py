@@ -1,7 +1,7 @@
 import time
 
 
-class PurePython(object):
+class BuiltIn(object):
 
     def delstring(self, mystring, dellist):
         for deletable in dellist:

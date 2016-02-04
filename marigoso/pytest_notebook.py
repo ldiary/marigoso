@@ -3,7 +3,7 @@ import nbformat
 import ntpath
 from queue import Empty
 from jupyter_client import KernelManager
-from marigoso import Python
+from marigoso import abstract
 
 
 default_options = ['assertmode',
@@ -61,7 +61,7 @@ def pytest_collect_file(parent, path):
         return TestScenario(path, parent)
 
 
-class TestScenario(pytest.File):
+class TestScenario(pytest.File, abstract.BuiltIn):
 
     def collect(self):
         nb = nbformat.read(self.fspath.open(), 4)
@@ -86,7 +86,7 @@ class TestScenario(pytest.File):
                     if cell.source.startswith(step):
                         setup = False
                         header = cell.source.split("\n")[0]
-                        header = Python.PurePython().delstring(header, ["### ", '(', ')', "'", '"'])
+                        header = self.delstring(header, ["### ", '(', ')', "'", '"'])
                         name = header.strip().replace(" ", "_").lower()
             if cell.cell_type == 'code' and nb.metadata.kernelspec.language == 'python':
                 if setup:
