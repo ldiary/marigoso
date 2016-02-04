@@ -17,7 +17,7 @@ from pathlib import Path, PurePath
 #TODO: convert request['django']['path'] to request.django.path
 
 # Internal Modules
-from . import abstract, browser, api_tools
+from . import abstract, browser, api
 
 
 class Test(object):
@@ -78,7 +78,7 @@ class Test(object):
         self.api.codes = requests.codes
         self.api._requests = requests
         self.api.pp = self.pp
-        self.register_modules("api", [abstract, api_tools])
+        self.register_modules("api", [abstract, api])
         return self.api
 
     def launch_browser(self, request=None):
