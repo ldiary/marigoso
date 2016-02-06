@@ -1,8 +1,4 @@
-import pytest
 import nbformat
-import ntpath
-from queue import Empty
-from jupyter_client import KernelManager
 from marigoso import abstract
 import pprint
 import sys
@@ -72,7 +68,9 @@ def configure_test():\n"""
 
 funcdef = """\n\n
 def {}(configure_test):
-    test, data, browser = configure_test
+    global test
+    global data
+    global browser
 """
 funcblock = "    {}"
 
@@ -87,14 +85,12 @@ def pytest_collection(session):
             options = session.config.option.__dict__
             contents.append("#This is an automatically generated file. All manual changes to this file will be overwritten.\n")
             contents.append(modvar)
-            for key in options:
-                if key not in default_options:
-                    option = "{} = '{}'\n".format(key, options[key])
-                    contents.append(option)
+
 
             funcname = "Default Name"
             inner_func = []
             modvars = []
+            append_to_mod = []
             setup = False
             for cell in nb.cells:
                 if cell.cell_type == 'markdown':
@@ -102,12 +98,18 @@ def pytest_collection(session):
                         break
                     if '## Test Configurations' in cell.source:
                         contents.append(fixdef)
+                        for key in options:
+                            if key not in default_options:
+                                option = "    {} = '{}'\n".format(key, options[key])
+                                contents.append(option)
                         setup = True
                         continue
                     for step in ["### Given", "### And", "### When", "### Then", "### But"]:
                         if cell.source.startswith(step):
                             if setup:
-                                contents.append(funcblock.format("return test, data, browser"))
+                                contents.append(funcblock.format("mod.test = test"))
+                                contents.append(funcblock.format("mod.data = data"))
+                                contents.append(funcblock.format("mod.browser = browser"))
                             setup = False
                             header = cell.source.split("\n")[0]
                             header = abstract.BuiltIn().delstring(header, ["### ", '(', ')', "'", '"'])
@@ -130,9 +132,6 @@ def pytest_collection(session):
                     contents.append(funcdef.format(funcname))
                     inner = False
                     for source in cell.source.split("\n"):
-                        if " = " in source:
-                            variable, _, _ = source.partition(" = ")
-                            modvars.append(variable)
                         if source.startswith("def"):
                             inner_func.append(source)
                             inner = True
@@ -143,7 +142,22 @@ def pytest_collection(session):
                                 continue
                             else:
                                 inner = False
+
+                        if " = " in source:
+                            left, equals, right = source.partition(" = ")
+                            variable = left.strip()
+                            if "." in variable:
+                                variable, _, _ = variable.partition(".")
+                            source = "".join([left.replace(variable, "mod." + variable), equals, right])
+                            if variable not in modvars:
+                                if type(variable) is list:
+                                    contents.insert(2, "".join([str(variable), " = []"]))
+                                elif type(variable) is dict:
+                                    contents.insert(2, "".join([str(variable), " = {}"]))
+                                else:
+                                    contents.insert(2, "".join([str(variable), " = None"]))
+                                modvars.append(variable)
                         contents.append(funcblock.format(source))
-        with open(filename, 'w') as pyfile:
-            pyfile.write("\n".join(contents))
-        pprint.pprint(modvars)
+
+            with open(filename, 'w') as pyfile:
+                pyfile.write("\n".join(contents))
