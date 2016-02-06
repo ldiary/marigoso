@@ -4,7 +4,11 @@ import ntpath
 from queue import Empty
 from jupyter_client import KernelManager
 from marigoso import abstract
-
+import pprint
+import sys
+import os
+conf = sys.modules[__name__]
+called = 0
 
 default_options = ['assertmode',
                   'basetemp',
@@ -55,8 +59,65 @@ default_options = ['assertmode',
                   'version',
                   'xmlpath']
 
+funcdef = """\n\n
+def {}():
+"""
+funcblock = "    {}"
 
-def pytest_collect_file(parent, path):
+
+def pytest_collection(session):
+    print("************** SESSION *************")
+    pprint.pprint(session.__dict__)
+    for note in os.scandir(os.getcwd()):
+        if note.name.endswith('.ipynb') and note.is_file():
+            nb = nbformat.read(note.path, 4)
+            filename = "test_" + note.name.replace('.ipynb', '.py')
+
+            funcname = "Default Name"
+            text = ''
+            setup = False
+            test_setup = []
+            for cell in nb.cells:
+                if cell.cell_type == 'markdown':
+                    if "## Test Results" in cell.source:
+                        break
+                    if '## Test Configurations' in cell.source:
+                        setup = True
+                        continue
+                    for step in ["### Given", "### And", "### When", "### Then", "### But"]:
+                        if cell.source.startswith(step):
+                            setup = False
+                            header = cell.source.split("\n")[0]
+                            header = abstract.BuiltIn().delstring(header, ["### ", '(', ')', "'", '"'])
+                            funcname = header.strip().replace(" ", "_").lower()
+                if cell.cell_type == 'code' and nb.metadata.kernelspec.language == 'python':
+                    if setup:
+                        with open(filename, "a") as pyfile:
+                            pyfile.write("\n\n" + cell.source)
+                        continue
+                    if funcname == "Default Name":
+                        continue
+
+                    with open(filename, "a") as pyfile:
+                        text = funcdef.format(funcname)
+                        pyfile.write(text)
+                        text = []
+                        for source in cell.source.split("\n"):
+                            text.append(funcblock.format(source))
+                        pyfile.write("\n".join(text))
+
+
+def pytest_collect_file(path, parent):
+    # print("************** PATH *************")
+    # print("Call No: {}".format(conf.called))
+    # conf.called += 1
+    # pprint.pprint(path.__dict__)
+    # print("\n")
+    # print("************** PARENT *************")
+    # pprint.pprint(parent.__dict__)
+    pass
+
+def old_collect_file(path, parent):
     if path.ext == ".ipynb":
         return TestScenario(path, parent)
 
