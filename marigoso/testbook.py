@@ -60,6 +60,7 @@ default_options = ['assertmode',
                   'xmlpath']
 
 modvar = """
+import importlib
 import sys
 mod = sys.modules[__name__]\n
 """
@@ -68,7 +69,11 @@ fixdef = """
 import pytest
 
 @pytest.fixture(scope='session')
-def configure_test():\n"""
+def configure_test():
+    global test
+    global data
+    global browser
+"""
 
 funcdef = """\n\n
 def {}(configure_test):
@@ -86,21 +91,27 @@ def pytest_collection(session):
             contents = []
             nb = nbformat.read(note.path, 4)
             filename = "test_" + note.name.replace('.ipynb', '.py')
+            fileprefix = abstract.BuiltIn().delstring(note.name, [".ipynb", "'", "[", "]", "(", ")"])
+            fileprefix = "_" + fileprefix.replace(" ", "_")
             options = session.config.option.__dict__
             contents.append("#This is an auto-generated file. All manual changes to this file will be overwritten.")
             contents.append(modvar)
+            contents.append("test = None")
+            contents.append("data = None")
+            contents.append("browser = None")
+            modvars = ["test", "data", "browser"]
+
 
 
             funcname = "Default Name"
             inner_func = []
-            modvars = []
             setup = False
             for cell in nb.cells:
                 if cell.cell_type == 'markdown':
                     if "## Test Results" in cell.source:
                         break
                     if '## Test Configurations' in cell.source:
-                        contents.append(fixdef)
+                        contents.append(fixdef.replace('_test', fileprefix))
                         for key in options:
                             if key not in default_options:
                                 option = "    {} = '{}'".format(key, options[key])
@@ -109,10 +120,6 @@ def pytest_collection(session):
                         continue
                     for step in ["### Given", "### And", "### When", "### Then", "### But"]:
                         if cell.source.startswith(step):
-                            if setup:
-                                contents.append(funcblock.format("mod.test = test"))
-                                contents.append(funcblock.format("mod.data = data"))
-                                contents.append(funcblock.format("mod.browser = browser"))
                             setup = False
                             header = cell.source.split("\n")[0]
                             header = abstract.BuiltIn().delstring(header, ["### ", '(', ')', "'", '"'])
@@ -127,12 +134,15 @@ def pytest_collection(session):
                     if setup:
                         for source in cell.source.split("\n"):
                             contents.append(funcblock.format(source))
+                            if "import " in source and "from " not in source:
+                                _, _, right = source.partition("import ")
+                                contents.append("    importlib.reload({})".format(right))
                         contents.append("\n")
                         continue
                     if funcname == "Default Name":
                         continue
 
-                    contents.append(funcdef.format(funcname))
+                    contents.append(funcdef.replace("_test", fileprefix).format(funcname))
                     inner = False
                     for source in cell.source.split("\n"):
                         if source.startswith("def"):
@@ -151,7 +161,8 @@ def pytest_collection(session):
                             variable = left.strip()
                             if "." in variable:
                                 variable, _, _ = variable.partition(".")
-                            source = "".join([left.replace(variable, "mod." + variable), equals, right])
+                            if variable not in ["test", "data", "browser"]:
+                                source = "".join([left.replace(variable, "mod." + variable), equals, right])
                             if variable not in modvars:
                                 if type(variable) is list:
                                     contents.insert(2, "".join([str(variable), " = []"]))
