@@ -91,7 +91,8 @@ def pytest_collection(session):
             contents = []
             nb = nbformat.read(note.path, 4)
             filename = "test_" + note.name.replace('.ipynb', '.py')
-            fileprefix = abstract.BuiltIn().delstring(note.name, [".ipynb", "'", "[", "]", "(", ")"])
+            filename = filename.replace("-", "_")
+            fileprefix = abstract.BuiltIn().delstring(note.name, [".ipynb", "'", "[", "]", "(", ")", "-"])
             fileprefix = "_" + fileprefix.replace(" ", "_")
             options = session.config.option.__dict__
             contents.append("#This is an auto-generated file. All manual changes to this file will be overwritten.")
@@ -123,7 +124,7 @@ def pytest_collection(session):
                             setup = False
                             header = cell.source.split("\n")[0]
                             header = abstract.BuiltIn().delstring(header, ["### ", '(', ')', "'", '"'])
-                            latest_funcname = header.strip().replace(" ", "_").lower()
+                            latest_funcname = header.strip().replace(" ", "_").replace("-", "_").lower()
                             if latest_funcname != funcname:
                                 if inner_func:
                                     contents.append("\n\n\n")
