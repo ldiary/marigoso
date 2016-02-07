@@ -38,7 +38,7 @@ setup(
     packages=["marigoso"],
     entry_points={
         'pytest11': [
-            'marigoso = marigoso.pytest_notebook',
+            'marigoso = marigoso.testbook',
         ]
     },
     include_package_data=True,

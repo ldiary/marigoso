@@ -1,3 +1,7 @@
+"""
+This is a pytest plugin which will convert bdd-style tests written in Jupyter (IPython Notebook) into a pytest
+discoverable and runnable tests. This plugin will auto-generate a python file which pytest will then execute.
+"""
 import nbformat
 from marigoso import abstract
 import pprint
@@ -83,14 +87,13 @@ def pytest_collection(session):
             nb = nbformat.read(note.path, 4)
             filename = "test_" + note.name.replace('.ipynb', '.py')
             options = session.config.option.__dict__
-            contents.append("#This is an automatically generated file. All manual changes to this file will be overwritten.\n")
+            contents.append("#This is an auto-generated file. All manual changes to this file will be overwritten.")
             contents.append(modvar)
 
 
             funcname = "Default Name"
             inner_func = []
             modvars = []
-            append_to_mod = []
             setup = False
             for cell in nb.cells:
                 if cell.cell_type == 'markdown':
@@ -100,7 +103,7 @@ def pytest_collection(session):
                         contents.append(fixdef)
                         for key in options:
                             if key not in default_options:
-                                option = "    {} = '{}'\n".format(key, options[key])
+                                option = "    {} = '{}'".format(key, options[key])
                                 contents.append(option)
                         setup = True
                         continue
