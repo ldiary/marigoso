@@ -245,3 +245,6 @@ class BrowsingActions(Mouse, KeyBoard):
         else:
             element = coordinate
         self.execute_script("arguments[0].scrollIntoView(true);", element)
+
+    def screenshot(self, location):
+        self.get_screenshot_as_file(location)

@@ -102,8 +102,6 @@ def pytest_collection(session):
             contents.append("browser = None")
             modvars = ["test", "data", "browser"]
 
-
-
             funcname = "Default Name"
             inner_func = []
             setup = False
