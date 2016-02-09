@@ -87,25 +87,27 @@ class BrowserException(Exception):
         super(BrowserException, self).__init__(message)
         self.status = status
         if platform.system() == 'Windows':
-            import win32gui
-            import win32ui
-            import win32con
-            import ctypes
-            user32 = ctypes.windll.user32
-            width, height = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
-            hwnd = win32gui.FindWindow(None, "Firefox")
-            wDC = win32gui.GetWindowDC(hwnd)
-            dcObj=win32ui.CreateDCFromHandle(wDC)
-            cDC=dcObj.CreateCompatibleDC()
-            dataBitMap = win32ui.CreateBitmap()
-            dataBitMap.CreateCompatibleBitmap(dcObj, width, height)
-            cDC.SelectObject(dataBitMap)
-            cDC.BitBlt((0,0),(width, height) , dcObj, (0,0), win32con.SRCCOPY)
-            dataBitMap.SaveBitmapFile(cDC, "BrowserException.jpg")
-            dcObj.DeleteDC()
-            cDC.DeleteDC()
-            win32gui.ReleaseDC(hwnd, wDC)
-            win32gui.DeleteObject(dataBitMap.GetHandle())
+            import pyscreenshot as ImageGrab
+            ImageGrab.grab_to_file('BrowserException.png')
+            # import win32gui
+            # import win32ui
+            # import win32con
+            # import ctypes
+            # user32 = ctypes.windll.user32
+            # width, height = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+            # hwnd = win32gui.FindWindow(None, "Firefox")
+            # wDC = win32gui.GetWindowDC(hwnd)
+            # dcObj=win32ui.CreateDCFromHandle(wDC)
+            # cDC=dcObj.CreateCompatibleDC()
+            # dataBitMap = win32ui.CreateBitmap()
+            # dataBitMap.CreateCompatibleBitmap(dcObj, width, height)
+            # cDC.SelectObject(dataBitMap)
+            # cDC.BitBlt((0,0),(width, height) , dcObj, (0,0), win32con.SRCCOPY)
+            # dataBitMap.SaveBitmapFile(cDC, "BrowserException.jpg")
+            # dcObj.DeleteDC()
+            # cDC.DeleteDC()
+            # win32gui.ReleaseDC(hwnd, wDC)
+            # win32gui.DeleteObject(dataBitMap.GetHandle())
 
 
 class DOM(BuiltIn):
