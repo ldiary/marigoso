@@ -86,6 +86,11 @@ funcblock = "    {}"
 
 def pytest_collection(session):
 
+    # Note that this is a replacement to the old method of executing the test by running a jupyter kernel.
+    # This method auto-generate a test file which can then be discovered and executed by pytest without
+    # using the jupyter kernel. The advantage of this approach is that we get a more readable stacktrace
+    # when test fails. This might change again in the future once we know how to correctly handle and display
+    # stacktrace provided by the jupyter kernel to the pytest terminal writer.
     for note in os.scandir(os.getcwd()):
         if note.name.endswith('.ipynb') and note.is_file():
             contents = []
