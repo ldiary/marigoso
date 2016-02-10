@@ -9,6 +9,7 @@ import sys
 import os
 conf = sys.modules[__name__]
 called = 0
+autogenfiles = []
 
 default_options = ['assertmode',
                   'basetemp',
@@ -179,3 +180,11 @@ def pytest_collection(session):
 
             with open(filename, 'w') as pyfile:
                 pyfile.write("\n".join(contents))
+            autogenfiles.append(filename)
+
+
+def pytest_sessionfinish(session, exitstatus):
+    if exitstatus == 0:
+        for pyfile in conf.autogenfiles:
+            if os.path.isfile(pyfile):
+                os.remove(pyfile)
