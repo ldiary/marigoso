@@ -105,6 +105,13 @@ class DOM(BuiltIn):
                 raise e
         return coordinate.is_displayed()
 
+    def switch_frame(self, coordinate):
+        if isinstance(coordinate, str):
+            element = self.get_element(coordinate)
+        else:
+            element = coordinate
+        self.switch_to.frame(element)
+
 
 class KeyBoard(DOM):
 

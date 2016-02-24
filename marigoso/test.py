@@ -50,6 +50,7 @@ class Test(object):
                 self.request.update(request)
             except AttributeError:
                 self.request = request
+
         if 'configparser' in request:
             self.configparser = configparser.ConfigParser()
             self.configparser.read(request['configparser'])
