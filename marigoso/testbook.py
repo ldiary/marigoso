@@ -1,15 +1,10 @@
-"""
-This is a pytest plugin which will convert bdd-style tests written in Jupyter (IPython Notebook) into a pytest
-discoverable and runnable tests. This plugin will auto-generate a python file which pytest will then execute.
-"""
+import pytest
 import nbformat
+import ntpath
+from queue import Empty
+from jupyter_client import KernelManager
 from marigoso import abstract
-import pprint
-import sys
-import os
-conf = sys.modules[__name__]
-called = 0
-autogenfiles = []
+
 
 default_options = ['assertmode',
                   'basetemp',
@@ -60,131 +55,105 @@ default_options = ['assertmode',
                   'version',
                   'xmlpath']
 
-modvar = """
-import importlib
-import sys
-mod = sys.modules[__name__]\n
-"""
 
-fixdef = """
-import pytest
-
-@pytest.fixture(scope='session')
-def configure_test():
-    global test
-    global data
-    global browser
-"""
-
-funcdef = """\n\n
-def {}(configure_test):
-    global test
-    global data
-    global browser
-"""
-funcblock = "    {}"
+def pytest_collect_file(parent, path):
+    if path.ext == ".ipynb":
+        return TestScenario(path, parent)
 
 
-def pytest_collection(session):
+class TestScenario(pytest.File, abstract.BuiltIn):
 
-    # Note that this is a replacement to the old method of executing the test by running a jupyter kernel.
-    # This method auto-generate a test file which can then be discovered and executed by pytest without
-    # using the jupyter kernel. The advantage of this approach is that we get a more readable stacktrace
-    # when test fails. This might change again in the future once we know how to correctly handle and display
-    # stacktrace provided by the jupyter kernel to the pytest terminal writer.
-    for note in os.scandir(os.getcwd()):
-        if note.name.endswith('.ipynb') and note.is_file():
-            contents = []
-            nb = nbformat.read(note.path, 4)
-            filename = "test_" + note.name.replace('.ipynb', '.py')
-            filename = filename.replace("-", "_")
-            fileprefix = abstract.BuiltIn().delstring(note.name, [".ipynb", "'", "[", "]", "(", ")", "-"])
-            fileprefix = "_" + fileprefix.replace(" ", "_")
-            options = session.config.option.__dict__
-            contents.append("#This is an auto-generated file. All manual changes to this file will be overwritten.")
-            contents.append(modvar)
-            contents.append("test = None")
-            contents.append("data = None")
-            contents.append("browser = None")
-            modvars = ["test", "data", "browser"]
+    def collect(self):
+        nb = nbformat.read(self.fspath.open(), 4)
+        self.km = KernelManager()
+        self.km.start_kernel()
+        self.kc = self.km.client()
+        self.kc.start_channels()
+        self.kc.wait_for_ready()
+        self.name = ntpath.basename(self.name).replace(".ipynb", "")
 
-            funcname = "Default Name"
-            inner_func = []
-            setup = False
-            for cell in nb.cells:
-                if cell.cell_type == 'markdown':
-                    if "## Test Results" in cell.source:
-                        break
-                    if '## Test Configurations' in cell.source:
-                        contents.append(fixdef.replace('_test', fileprefix))
-                        for key in options:
-                            if key not in default_options:
-                                option = "    {} = '{}'".format(key, options[key])
-                                contents.append(option)
-                        setup = True
-                        continue
-                    for step in ["### Given", "### And", "### When", "### Then", "### But"]:
-                        if cell.source.startswith(step):
-                            setup = False
-                            header = cell.source.split("\n")[0]
-                            header = abstract.BuiltIn().delstring(header, ["### ", '(', ')', "'", '"'])
-                            latest_funcname = header.strip().replace(" ", "_").replace("-", "_").lower()
-                            if latest_funcname != funcname:
-                                if inner_func:
-                                    contents.append("\n\n\n")
-                                    contents.extend(inner_func)
-                                    inner_func = []
-                                funcname = latest_funcname
-                if cell.cell_type == 'code' and nb.metadata.kernelspec.language == 'python':
-                    if setup:
-                        for source in cell.source.split("\n"):
-                            contents.append(funcblock.format(source))
-                            if "import " in source and "from " not in source:
-                                _, _, right = source.partition("import ")
-                                contents.append("    importlib.reload({})".format(right))
-                        contents.append("\n")
-                        continue
-                    if funcname == "Default Name":
-                        continue
+        name = "Default Name"
+        setup = False
+        self.test_setup = []
+        for cell in nb.cells:
+            if cell.cell_type == 'markdown':
+                if "## Test Results" in cell.source:
+                    return
+                if '## Test Configurations' in cell.source:
+                    setup = True
+                    continue
+                for step in ["### Given", "### And", "### When", "### Then", "### But"]:
+                    if cell.source.startswith(step):
+                        setup = False
+                        header = cell.source.split("\n")[0]
+                        header = self.delstring(header, ["### ", '(', ')', "'", '"'])
+                        name = header.strip().replace(" ", "_").lower()
+            if cell.cell_type == 'code' and nb.metadata.kernelspec.language == 'python':
+                if setup:
+                    self.test_setup.append(cell.source)
+                    continue
+                if name == "Default Name":
+                    continue
+                yield TestStep(name, self, cell)
 
-                    contents.append(funcdef.replace("_test", fileprefix).format(funcname))
-                    inner = False
-                    for source in cell.source.split("\n"):
-                        if source.startswith("def"):
-                            inner_func.append(source)
-                            inner = True
-                            continue
-                        if inner:
-                            if source.startswith("    "):
-                                inner_func.append(source)
-                                continue
-                            else:
-                                inner = False
+    def setup(self):
+        self.km.restart_kernel()
+        options = self.config.option.__dict__
+        for key in options.keys():
+            if key not in default_options:
+                option = "{} = '{}'".format(key, options[key])
+                self.kc.execute(option, allow_stdin=False)
+        for setup in self.test_setup:
+            self.kc.execute(setup, allow_stdin=False)
 
-                        if " = " in source:
-                            left, equals, right = source.partition(" = ")
-                            variable = left.strip()
-                            if "." in variable:
-                                variable, _, _ = variable.partition(".")
-                            if variable not in ["test", "data", "browser"]:
-                                source = "".join([left.replace(variable, "mod." + variable), equals, right])
-                            if variable not in modvars:
-                                if type(variable) is list:
-                                    contents.insert(2, "".join([str(variable), " = []"]))
-                                elif type(variable) is dict:
-                                    contents.insert(2, "".join([str(variable), " = {}"]))
-                                else:
-                                    contents.insert(2, "".join([str(variable), " = None"]))
-                                modvars.append(variable)
-                        contents.append(funcblock.format(source))
+    def teardown(self):
+        self.kc.execute("browser.quit()\n", allow_stdin=False)  # Quits any existing browser
+        self.kc.stop_channels()
+        self.km.shutdown_kernel(now=True)
 
-            with open(filename, 'w') as pyfile:
-                pyfile.write("\n".join(contents))
-            autogenfiles.append(filename)
+    def repr_failure(self, excinfo):
+        """ called when self.runtest() raises an exception. """
+        if isinstance(excinfo.value, TestException):
+            return "\n".join([
+                "TestItem execution failed",
+                "Source:\n%s\n\n"
+                "Traceback:\n%s\n" % excinfo.value.args,
+            ])
+        else:
+            return "pytest plugin exception: %s" % str(excinfo.value)
 
 
-def pytest_sessionfinish(session, exitstatus):
-    if exitstatus == 0:
-        for pyfile in conf.autogenfiles:
-            if os.path.isfile(pyfile):
-                os.remove(pyfile)
+class TestException(Exception):
+    """ custom exception for error reporting. """
+
+
+class TestStep(pytest.Item, abstract.BuiltIn):
+
+    def __init__(self, name, parent, cell):
+        super(TestStep, self).__init__(name, parent)
+        self.cell = cell
+
+    def runtest(self):
+        run_id = self.parent.kc.execute(self.cell.source, allow_stdin=False)
+        timeout = 540 #540seconds == 9minutes
+        while True:
+            try:
+                reply = self.parent.kc.get_shell_msg(block=True, timeout=timeout)
+                if reply.get("parent_header", None) and reply["parent_header"].get("msg_id", None) == run_id:
+                    break
+            except Empty:
+                raise TestException("Timeout of %d seconds exceeded executing cell: %s" (timeout, self.cell.source))
+
+        if reply['content']['status'] == 'error':
+            traceback = reply['content']['traceback']
+            traceback = "".join(traceback)
+            raise TestException(self.cell.source,
+                                self.delstring(traceback,
+                                                                 ["\x1b",
+                                                                  "[1;31m",
+                                                                  "[1;32m",
+                                                                  "[0;32m",
+                                                                  "[1;33m",
+                                                                  "[1;34m",
+                                                                  "[0;36m",
+                                                                  "[0m"]))

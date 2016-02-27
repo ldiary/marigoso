@@ -88,6 +88,10 @@ class BrowserException(Exception):
 
 class DOM(BuiltIn):
 
+    @property
+    def url(self):
+        return self.current_url
+
     def get_all(self, coordinate, timeout=TIMEOUT):
         return self.get_element(coordinate, _all=True, timeout=timeout)
 
