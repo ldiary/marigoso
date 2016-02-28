@@ -1,5 +1,5 @@
 import types
-from .abstract import BuiltIn
+from .abstract import Utils
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
@@ -86,7 +86,7 @@ class BrowserException(Exception):
         self.status = status
 
 
-class DOM(BuiltIn):
+class DOM(Utils):
 
     @property
     def url(self):
@@ -257,5 +257,9 @@ class BrowsingActions(Mouse, KeyBoard):
             element = coordinate
         self.execute_script("arguments[0].scrollIntoView(true);", element)
 
-    def screenshot(self, location):
-        self.get_screenshot_as_file(location)
+    def screenshot(self, name):
+        name = self.time_unique(name) + ".png"
+        self.driver.get_screenshot_as_file(name)
+        self.log(name)
+        self.log(self.url)
+        return name

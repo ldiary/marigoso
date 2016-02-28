@@ -61,7 +61,7 @@ def pytest_collect_file(parent, path):
         return TestScenario(path, parent)
 
 
-class TestScenario(pytest.File, abstract.BuiltIn):
+class TestScenario(pytest.File, abstract.Utils):
 
     def collect(self):
         nb = nbformat.read(self.fspath.open(), 4)
@@ -127,7 +127,7 @@ class TestException(Exception):
     """ custom exception for error reporting. """
 
 
-class TestStep(pytest.Item, abstract.BuiltIn):
+class TestStep(pytest.Item, abstract.Utils):
 
     def __init__(self, name, parent, cell):
         super(TestStep, self).__init__(name, parent)

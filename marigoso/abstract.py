@@ -1,7 +1,9 @@
 import time
+import datetime
+import pprint
 
 
-class BuiltIn(object):
+class Utils(object):
 
     def delstring(self, mystring, dellist):
         for deletable in dellist:
@@ -10,6 +12,41 @@ class BuiltIn(object):
 
     def wait(self, seconds):
         time.sleep(seconds)
+
+    def timestamp(self):
+        now = datetime.datetime.utcnow()
+        timestamp = now.strftime("_%d%m%Y_%H%M%S")
+        return str(timestamp)
+
+    def time_unique(self, whatever):
+        today = datetime.datetime.utcnow()
+        whatever += "_" + today.strftime('%Y-%b-%d_%H-%M-%S-%f')
+        return whatever
+
+    def day(self):
+        now = datetime.datetime.utcnow()
+        day = now.day
+        return str(day)
+
+    def month(self):
+        now = datetime.datetime.utcnow()
+        month = now.strftime("%B")
+        return str(month[:3])
+
+    def year(self):
+        now = datetime.datetime.utcnow()
+        year = now.year
+        return str(year)
+
+    def log(self, message):
+        print(message)
+
+    def pretty_log(self, message):
+        pprint.pprint(message, indent=4)
+
+    def trim_start(self, string, start, end=None):
+        extract = string[string.find(start) + len(start):end]
+        return extract.strip()
 
 
 class MutantDictionary(dict):
