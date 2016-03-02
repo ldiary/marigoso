@@ -259,7 +259,7 @@ class BrowsingActions(Mouse, KeyBoard):
 
     def screenshot(self, name):
         name = self.time_unique(name) + ".png"
-        self.driver.get_screenshot_as_file(name)
+        self.get_screenshot_as_file(name)
         self.log(name)
         self.log(self.url)
         return name
