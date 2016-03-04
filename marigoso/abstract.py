@@ -23,6 +23,28 @@ class Utils(object):
         whatever += "_" + today.strftime('%Y-%b-%d_%H-%M-%S-%f')
         return whatever
 
+    def timelapse(self, start, end=None, unit=None):
+        if end is not None:
+            duration = end - start
+        else:
+            duration = datetime.datetime.utcnow() - start
+        days, seconds = duration.days, duration.seconds
+        total_in_hrs = (days * 24) + (seconds // 3600)
+        total_in_mins = (days * 1440) + (seconds // 60)
+        total_in_seconds = days * 86400 + seconds
+        hrs = seconds // 3600
+        mins = (seconds % 3600) // 60
+        secs = seconds % 60
+        if unit is not None:
+            units = {
+                'days': days,
+                'hrs': total_in_hrs,
+                'mins': total_in_mins,
+                'seconds': total_in_seconds
+            }
+            return units[unit]
+        return days, hrs, mins, secs
+
     def day(self):
         now = datetime.datetime.utcnow()
         day = now.day
