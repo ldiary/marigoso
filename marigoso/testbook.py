@@ -135,7 +135,7 @@ class TestStep(pytest.Item, abstract.Utils):
 
     def runtest(self):
         run_id = self.parent.kc.execute(self.cell.source, allow_stdin=False)
-        timeout = 540 #540seconds == 9minutes
+        timeout = 1800 #1800seconds == 30minutes
         while True:
             try:
                 reply = self.parent.kc.get_shell_msg(block=True, timeout=timeout)
