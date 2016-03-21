@@ -17,7 +17,7 @@ from pathlib import Path, PurePath
 #TODO: convert request['django']['path'] to request.django.path
 
 # Internal Modules
-from . import abstract, browser, interface
+from . import abstract, browser, interface, notebook_import
 
 
 class Test(object):
@@ -26,6 +26,9 @@ class Test(object):
         self.data = abstract.MutantDictionary()
         self.request = request
         self.pp = pprint.PrettyPrinter(indent=4)
+
+    def setup_notebooks(self, parent, subfolder=None):
+        return abstract.Utils().import_parent_folders(parent, subfolder)
 
     def setup_django_models(self, request=None):
         request = request or self.request

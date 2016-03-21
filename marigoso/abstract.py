@@ -1,6 +1,8 @@
 import time
 import datetime
 import pprint
+import pathlib
+import sys
 
 
 class Utils(object):
@@ -67,8 +69,27 @@ class Utils(object):
         pprint.pprint(message, indent=4)
 
     def trim_start(self, string, start, end=None):
+        """ Removes the starting substring.
+        :param string: The entire string.
+        :param start:  The starting substring to be removed.
+        :param end:    An optional point in the string, defaults to the strings ending
+        :return:       A substring consists of the subsequent substring after the
+                         start substring is removed, up to the specified end.
+        """
         extract = string[string.find(start) + len(start):end]
         return extract.strip()
+
+    def import_parent_folders(self, parent, subfolder=None):
+        current = pathlib.Path.cwd()
+        while current.name != parent:
+            current = current.parent
+        if subfolder:
+            located_parent = str(pathlib.PurePath(current, subfolder))
+        else:
+            located_parent = str(current)
+        sys.path.insert(0, located_parent)
+        return current, located_parent
+
 
 
 class MutantDictionary(dict):

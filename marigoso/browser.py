@@ -73,6 +73,7 @@ def get_element(self, coordinate, child=None, _all=None, timeout=TIMEOUT):
                 elements = wait_for(self, getattr(reference, find[by][ALL]), locator, timeout)
                 for element in elements:
                     element.wait_for = types.MethodType(wait_for, element)
+                    element.wait = types.MethodType(Utils().wait, element)
                     element.get_child = types.MethodType(get_element, element)
                     element.get_children = types.MethodType(get_children, element)
                 return elements
