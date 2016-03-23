@@ -1,9 +1,11 @@
 import types
+import datetime
 from .abstract import Utils
-from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, NoAlertPresentException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.select import Select
+from contextlib import contextmanager
 
 
 ONE, ALL, TIMEOUT = 0, 1, 5
@@ -264,3 +266,36 @@ class BrowsingActions(Mouse, KeyBoard):
         self.log(name)
         self.log(self.url)
         return name
+
+    @contextmanager
+    def page_will_reload(self, coordinate, timeout=30):
+        element = self.get_element(coordinate)
+        yield
+        start = datetime.datetime.utcnow()
+        seconds = self.timelapse(start, unit='seconds')
+        while True:
+            try:
+                element.is_enabled()
+                seconds = self.timelapse(start, unit='seconds')
+            except StaleElementReferenceException:
+                break
+            if seconds > timeout:
+                status = "{} is enabled = {}".format(coordinate, element.is_enabled())
+                raise BrowserException("Timed out waiting for an expected page reload.", status=status)
+
+    @contextmanager
+    def alert_will_popup(self, text, timeout=30):
+        try:
+            self.switch_to.alert.text
+        except NoAlertPresentException:
+            pass
+        yield
+        start = datetime.datetime.utcnow()
+        seconds = self.timelapse(start, unit='seconds')
+        while True:
+            try:
+                return self.switch_to.alert.text == text
+            except NoAlertPresentException:
+                pass
+            if seconds > timeout:
+                raise BrowserException("Timed out waiting for an expected alert\n{}.".format(text))

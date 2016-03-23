@@ -165,12 +165,18 @@ class Test(object):
         assert 'browser' in request
 
 
-    def register_function(self, attr_name, functions):
+    def register_functions(self, attr_name, *functions):
+        """
+        :param attr_name: The name of the attribute that will be attached to the test object.
+        :param functions: A sequence of functions that will be attached
+                           to the test object using the attribute mentioned above.
+        :return: None
+        """
         for func in functions:
             _attribute = getattr(self, attr_name)
             setattr(_attribute, func.__name__, types.MethodType(func, _attribute))
 
-    def register_modules(self, attr_name, modules):
+    def register_modules(self, attr_name, *modules):
         """Register module defined functions to an attribute of the test object."""
         for mod in modules:
             for func_name, func in inspect.getmembers(mod, inspect.isfunction):
