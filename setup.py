@@ -35,6 +35,8 @@ setup(
         'selenium>=2.46.0',
         'requests>=2.8.1',
         'pytest>=2.9.0',
+        'django',
+        'jupyter'
     ],
     packages=["marigoso"],
     entry_points={
