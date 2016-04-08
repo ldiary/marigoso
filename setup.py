@@ -35,7 +35,7 @@ setup(
         'django',
         'django-crispy-forms',
         'django-extensions',
-        'jupyter'
+        'jupyter',
         'pytest',
         'requests',
         'selenium',
