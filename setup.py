@@ -32,11 +32,13 @@ setup(
         "Programming Language :: Python :: 3"
     ] + [("Programming Language :: Python :: %s" % x) for x in " 3.4".split()],
     install_requires=[
-        'selenium>=2.46.0',
-        'requests>=2.8.1',
-        'pytest>=2.9.0',
         'django',
+        'django-crispy-forms',
+        'django-extensions',
         'jupyter'
+        'pytest',
+        'requests',
+        'selenium',
     ],
     packages=["marigoso"],
     entry_points={
