@@ -297,11 +297,11 @@ class BrowsingActions(Mouse, KeyBoard):
             pass
         yield
         start = datetime.datetime.utcnow()
-        seconds = self.timelapse(start, unit='seconds')
         while True:
             try:
                 return self.switch_to.alert.text == text
             except NoAlertPresentException:
                 pass
+            seconds = self.timelapse(start, unit='seconds')
             if seconds > timeout:
                 raise BrowserException("Timed out waiting for an expected alert\n{}.".format(text))
