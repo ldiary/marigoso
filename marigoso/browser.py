@@ -11,7 +11,7 @@ from contextlib import contextmanager
 ONE, ALL, TIMEOUT = 0, 1, 5
 
 
-def get_element(self, coordinate, child=None, _all=None, timeout=TIMEOUT):
+def get_element(self, coordinate, child=None, _all=None, timeout=TIMEOUT, stealth=None):
     find = {
         'css=':   ("find_element_by_css_selector", "find_elements_by_css_selector"),
         'xpath=': ("find_element_by_xpath", "find_elements_by_xpath"),
@@ -23,12 +23,15 @@ def get_element(self, coordinate, child=None, _all=None, timeout=TIMEOUT):
         'tag=':   ("find_element_by_tag_name", "find_elements_by_tag_name")
     }
 
-    def wait_for(_self, method, locator, timeout=TIMEOUT):
+    def wait_for(_self, method, locator, timeout=TIMEOUT, stealth=None):
         """Wait until the element specified by the given locator (i.e. string selector) is displayed to the user."""
         status = "Unknown"
         for index in range(timeout):
             try:
                 _element = method(locator)
+                if stealth:
+                    # When we want to interact with the element even when it's not displayed.
+                    return _element
                 try:
                     if _element.is_displayed():
                         return _element
@@ -44,14 +47,14 @@ def get_element(self, coordinate, child=None, _all=None, timeout=TIMEOUT):
         raise BrowserException("wait_for({}, {}, {}), timeout reached; Status: {}".format(
             method.__name__, locator, timeout, status), status=status)
 
-    def get_children(_self, coordinate, timeout=TIMEOUT):
-        return _self.get_child(coordinate, _all=True, timeout=timeout)
+    def get_children(_self, coordinate, timeout=TIMEOUT, stealth=None):
+        return _self.get_child(coordinate, _all=True, timeout=timeout, stealth=stealth)
 
     if isinstance(coordinate, str):
         if "=" not in coordinate:
             if _all is None:
-                return wait_for(self, getattr(self, find['link='][ONE]), coordinate, timeout)
-            return wait_for(self, getattr(self, find['link='][ALL]), coordinate)
+                return wait_for(self, getattr(self, find['link='][ONE]), coordinate, timeout, stealth)
+            return wait_for(self, getattr(self, find['link='][ALL]), coordinate, timeout, stealth)
         reference, locator = self, coordinate
     else:
         reference, locator = coordinate, child
@@ -62,7 +65,7 @@ def get_element(self, coordinate, child=None, _all=None, timeout=TIMEOUT):
             locator = locator.replace(by, '')
             if _all is None:
                 # Get the element returned by wait_for
-                element = wait_for(self, getattr(reference, find[by][ONE]), locator, timeout)
+                element = wait_for(self, getattr(reference, find[by][ONE]), locator, timeout, stealth)
                 # Give the element the ability to grab displayed element
                 element.wait_for = types.MethodType(wait_for, element)
                 # Give the element the ability to get a child or all children
@@ -72,7 +75,7 @@ def get_element(self, coordinate, child=None, _all=None, timeout=TIMEOUT):
                 return element
             else:
                 # Get the elements returned by wait_for
-                elements = wait_for(self, getattr(reference, find[by][ALL]), locator, timeout)
+                elements = wait_for(self, getattr(reference, find[by][ALL]), locator, timeout, stealth)
                 for element in elements:
                     element.wait_for = types.MethodType(wait_for, element)
                     element.wait = types.MethodType(Utils().wait, element)
@@ -98,9 +101,12 @@ class DOM(Utils):
     def get_all(self, coordinate, timeout=TIMEOUT):
         return self.get_element(coordinate, _all=True, timeout=timeout)
 
-    def get_element(self, coordinate, child=None, _all=None, timeout=TIMEOUT):
+    def get_stealth(self, coordinate, timeout=TIMEOUT):
+        return self.get_element(coordinate, timeout=timeout, stealth=True)
+
+    def get_element(self, coordinate, child=None, _all=None, timeout=TIMEOUT, stealth=None):
         # We're using '_all' instead of the Python keyword 'all'
-        return get_element(self, coordinate, child, _all, timeout)
+        return get_element(self, coordinate, child, _all, timeout=timeout, stealth=stealth)
 
     def is_available(self, coordinate, timeout=TIMEOUT):
         if isinstance(coordinate, str):

@@ -17,7 +17,7 @@ from pathlib import Path, PurePath
 #TODO: convert request['django']['path'] to request.django.path
 
 # Internal Modules
-from . import abstract, browser, interface, notebook_import
+from . import abstract, browser, interface
 
 
 class Test(object):
@@ -105,32 +105,39 @@ class Test(object):
                 "Safari":       DesiredCapabilities.SAFARI,
             }
             caps = capabilities_map[request['browser']]
+
+            ############################################
+            ### Firefox
+            ############################################
             if request['browser'] == 'Firefox':
                 firefox_profile = FirefoxProfile()
-                firefox_profile.set_preference('extensions.logging.enabled', False)
-                firefox_profile.set_preference('network.dns.disableIPv6', False)
-                # Prevent Firebug from opening an extra tab
-                firefox_profile.set_preference('extensions.firebug.showFirstRunPage', False)
                 if 'firefox' in request:
+                    if 'preferences' in request['firefox']:
+                        for preference in request['firefox']['preferences']:
+                            firefox_profile.set_preference(*preference)
                     if 'extensions' in request['firefox']:
                         for extension in request['firefox']['extensions']:
                             extension = PurePath(request['firefox']['extensions_path'], extension)
                             firefox_profile.add_extension(str(extension))
                     if 'capabilities' in request['firefox']:
                         caps.update(request['firefox']['capabilities'])
-
                 selenium_proxy = self.setup_proxy()
-
                 class Mixin(Firefox, browser.BrowsingActions): pass
                 self.browser = Mixin(firefox_profile, proxy=selenium_proxy, capabilities=caps)
+
+            ############################################
+            ### Internet Explorer
+            ############################################
             elif request['browser'] == 'IExplorer':
                 # Not a good idea => caps['nativeEvents'] = False
                 iedriver_server = os.path.join(request['iexplorer']['server_path'],
                                                request['iexplorer']['server_file'])
-
                 class Mixin(Ie, browser.BrowsingActions): pass
                 self.browser = Mixin(iedriver_server, capabilities=caps)
 
+            ############################################
+            ### GhostDriver, PhantomJS
+            ############################################
             elif request['browser'] == 'PhantomJS':
                 service_args = ["--ignore-ssl-errors=yes"]
                 caps['phantomjs.page.settings.userAgent'] = (
@@ -145,25 +152,28 @@ class Test(object):
                 # https://github.com/angular/protractor/issues/585
                 self.browser.set_window_size(1024, 768)
 
+            ############################################
+            ### Chrome
+            ############################################
             elif request['browser'] == 'Chrome':
                 chromedriver_server = os.path.join(request['chrome']['server_path'],
                                                    request['chrome']['server_file'])
                 os.environ["webdriver.chrome.driver"] = chromedriver_server
-
                 class Mixin(Chrome, browser.BrowsingActions): pass
                 self.browser = Mixin(chromedriver_server)
 
+            ############################################
+            ### Safari
+            ############################################
             elif request['browser'] == 'Safari':
                 selenium_server = os.path.join(request['safari']['server_path'],
                                                request['safari']['server_file'])
-
                 class Mixin(Safari, browser.BrowsingActions): pass
                 self.browser = Mixin(selenium_server)
             return self.browser
 
         print("Please specify which browser to launch.")
         assert 'browser' in request
-
 
     def register_functions(self, attr_name, *functions):
         """
@@ -200,6 +210,12 @@ class Test(object):
                 _attribute = getattr(self, cls_name)
                 for func_name, func in inspect.getmembers(cls, inspect.isfunction):
                     setattr(_attribute, func_name, types.MethodType(func, _attribute))
+
+    def reload_modules(self, *modules):
+        """This is useful when you have edited a module and you want this edited version to be updated in your
+        currently running jupyter notebook."""
+        for module in modules:
+            importlib.reload(module)
 
     def get_django_models(self, request):
         # Setup Django
