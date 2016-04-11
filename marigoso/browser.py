@@ -275,10 +275,12 @@ class BrowsingActions(Mouse, KeyBoard):
 
     @contextmanager
     def page_will_reload(self, coordinate, timeout=30):
-        element = self.get_element(coordinate)
+        if isinstance(coordinate, str):
+            element = self.get_element(coordinate)
+        else:
+            element = coordinate
         yield
         start = datetime.datetime.utcnow()
-        seconds = self.timelapse(start, unit='seconds')
         while True:
             try:
                 element.is_enabled()
