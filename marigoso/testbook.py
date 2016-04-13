@@ -79,7 +79,7 @@ class TestScenario(pytest.File, abstract.Utils):
             if cell.cell_type == 'markdown':
                 if "## Test Results" in cell.source:
                     return
-                if '## Test Configurations' in cell.source:
+                if '## Test Configurations' in cell.source or '## Environmental Needs' in cell.source:
                     setup = True
                     continue
                 for step in ["### Given", "### And", "### When", "### Then", "### But"]:
