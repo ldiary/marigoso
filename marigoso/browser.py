@@ -147,7 +147,7 @@ class Mouse(DOM):
     def press(self, coordinate, success=None):
         """Success must be given as a tuple of a (coordinate, timeout).
         Use (coordinate,) if you want to use the default timeout."""
-        if type(coordinate) is WebElement:
+        if isinstance(coordinate, WebElement):
             coordinate.click()
         else:
             self.get_element(coordinate).click()
