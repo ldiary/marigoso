@@ -43,7 +43,7 @@ def get_element(self, coordinate, child=None, _all=None, timeout=TIMEOUT, stealt
                 status = "Not Displayed"
             except (NoSuchElementException, StaleElementReferenceException) as e:
                 status = "Not Found" if isinstance(e, NoSuchElementException) else "Stale Element"
-            _self.wait(1)
+            Utils().wait(1)
         raise BrowserException("wait_for({}, {}, {}), timeout reached; Status: {}".format(
             method.__name__, locator, timeout, status), status=status)
 
@@ -52,15 +52,14 @@ def get_element(self, coordinate, child=None, _all=None, timeout=TIMEOUT, stealt
 
     if isinstance(coordinate, str):
         if "=" not in coordinate:
-            if _all is None:
-                return wait_for(self, getattr(self, find['link='][ONE]), coordinate, timeout, stealth)
-            return wait_for(self, getattr(self, find['link='][ALL]), coordinate, timeout, stealth)
+            # Make 'link=' the default 'by' specifier
+            coordinate = "link=" + coordinate
         reference, locator = self, coordinate
     else:
         reference, locator = coordinate, child
 
     # Try the most commonly used selectors
-    for by in ['css=', 'xpath=', 'id=', 'name=', 'tag=', 'class=', 'plink', 'link']:
+    for by in ['link=', 'css=', 'xpath=', 'id=', 'name=', 'tag=', 'class=', 'plink=']:
         if locator.startswith(by):
             locator = locator.replace(by, '')
             if _all is None:
@@ -78,7 +77,6 @@ def get_element(self, coordinate, child=None, _all=None, timeout=TIMEOUT, stealt
                 elements = wait_for(self, getattr(reference, find[by][ALL]), locator, timeout, stealth)
                 for element in elements:
                     element.wait_for = types.MethodType(wait_for, element)
-                    element.wait = types.MethodType(Utils().wait, element)
                     element.get_child = types.MethodType(get_element, element)
                     element.get_children = types.MethodType(get_children, element)
                 return elements
