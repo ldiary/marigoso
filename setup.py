@@ -37,7 +37,6 @@ setup(
         'django-extensions',
         'jupyter',
         'pytest',
-        'requests',
         'selenium',
     ],
     packages=["marigoso"],
