@@ -1,5 +1,5 @@
 # External Package dependencies
-import requests
+#import requests
 from selenium.webdriver import Firefox, Ie, PhantomJS, Chrome, Safari, DesiredCapabilities
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 
@@ -73,17 +73,17 @@ class Test(object):
             selenium_proxy = None
         return selenium_proxy
 
-    def enable_api(self, request=None):
-        self.api = abstract.MutantDictionary()
-        self.api.session = requests.Session()
-        requests.packages.urllib3.disable_warnings()
-        self.api.session.headers = {'content-type': 'application/json'}
-        self.api.session.verify = False
-        self.api.codes = requests.codes
-        self.api._requests = requests
-        self.api.pp = self.pp
-        self.register_modules("api", [abstract, interface])
-        return self.api
+    # def enable_api(self, request=None):
+    #     self.api = abstract.MutantDictionary()
+    #     self.api.session = requests.Session()
+    #     requests.packages.urllib3.disable_warnings()
+    #     self.api.session.headers = {'content-type': 'application/json'}
+    #     self.api.session.verify = False
+    #     self.api.codes = requests.codes
+    #     self.api._requests = requests
+    #     self.api.pp = self.pp
+    #     self.register_modules("api", [abstract, interface])
+    #     return self.api
 
     def launch_browser(self, request=None):
         request = request or self.request
