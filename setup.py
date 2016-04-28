@@ -35,6 +35,8 @@ setup(
         'django',
         'django-crispy-forms',
         'django-extensions',
+        'notebook == 4.0.6',
+        'ipywidgets == 4.1',
         'jupyter',
         'pytest',
         'selenium',
