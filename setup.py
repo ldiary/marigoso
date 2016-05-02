@@ -14,7 +14,7 @@ setup(
     description="Functional Testing Tools for end to end testing of web applications and APIs.",
     author="Ernesto D. Luzon Jr.",
     license="MIT license",
-    author_email="edluzonjr@gmail.com",
+    author_email="raise_a_bug_in_myrepo@github.com",
     url="https://github.com/ldiary/marigoso",
     version=VERSION,
     classifiers=[
