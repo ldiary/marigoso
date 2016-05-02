@@ -1,6 +1,7 @@
 import pytest
 import nbformat
 import ntpath
+import re
 from queue import Empty
 from jupyter_client import KernelManager
 from marigoso import abstract
@@ -145,15 +146,10 @@ class TestStep(pytest.Item, abstract.Utils):
                 raise TestException("Timeout of %d seconds exceeded executing cell: %s" (timeout, self.cell.source))
 
         if reply['content']['status'] == 'error':
-            traceback = reply['content']['traceback']
-            traceback = "".join(traceback)
-            raise TestException(self.cell.source,
-                                self.delstring(traceback,
-                                                                 ["\x1b",
-                                                                  "[1;31m",
-                                                                  "[1;32m",
-                                                                  "[0;32m",
-                                                                  "[1;33m",
-                                                                  "[1;34m",
-                                                                  "[0;36m",
-                                                                  "[0m"]))
+            _traceback = reply['content']['traceback']
+            if self.config.getvalue("color") == 'yes':
+                setattr(self, 'traceback', _traceback)
+            else:
+                ansi_escape = re.compile(r'\x1b[^m]*m')
+                setattr(self, 'traceback', ansi_escape.sub('', "\n".join(_traceback)))
+            raise TestException(self.cell.source, _traceback)
