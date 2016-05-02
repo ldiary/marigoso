@@ -14,7 +14,7 @@ setup(
     description="Functional Testing Tools for end to end testing of web applications and APIs.",
     author="Ernesto D. Luzon Jr.",
     license="MIT license",
-    author_email="raise_a_bug_in_myrepo@github.com",
+    author_email="please_raise_a_bug_in_myrepo@github.com",
     url="https://github.com/ldiary/marigoso",
     version=VERSION,
     classifiers=[
@@ -39,13 +39,11 @@ setup(
         'ipywidgets == 4.1',
         'jupyter',
         'pytest',
+        'pytest-testbook',
         'selenium',
     ],
     packages=["marigoso"],
     entry_points={
-        'pytest11': [
-            'marigoso = marigoso.testbook',
-        ]
     },
     include_package_data=True,
 )
