@@ -20,6 +20,10 @@ from pathlib import Path, PurePath
 from . import abstract, browser, interface
 
 
+class TestException(Exception):
+    """Test exceptions."""
+
+
 class Test(object):
 
     def __init__(self, request=None):
@@ -58,6 +62,8 @@ class Test(object):
             self.configparser = configparser.ConfigParser()
             self.configparser.read(request['configparser'])
             setattr(self.configparser, 'data', types.MethodType(data, self.configparser))
+            return self.configparser
+        raise TestException("A configuration file was not specified.")
 
     def setup_proxy(self, request=None):
         request = request or self.request
