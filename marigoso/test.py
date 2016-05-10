@@ -25,6 +25,16 @@ class TestException(Exception):
 
 
 class Test(object):
+    """
+    A Test instance should have the following attributes that are often necessary to execute a test:
+         DEFAULT Attributes
+         1. data - a mutant dictionary which you can use both key referencing and dot notation to retrieve values
+         2. request - a copy of parameters passed to Test instance initialization
+
+         OPTIONAL Attributes
+         1. configparser - by calling self.setup_config_parser()
+         2. browser - by calling self.launch_browser()
+    """
 
     def __init__(self, request=None):
         self.data = abstract.MutantDictionary()
@@ -41,6 +51,8 @@ class Test(object):
             self.get_django_models(request)
 
     def setup_config_parser(self, request=None):
+        """Creates a ConfigParser, attach a reference of it to the Test instance
+        and returns the ConfigParser instance."""
 
         def data(self, key, section=None):
             section = section or self.sections()[0]
