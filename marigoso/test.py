@@ -137,6 +137,9 @@ class Test(object):
                         for extension in request['firefox']['extensions']:
                             extension = PurePath(request['firefox']['extensions_path'], extension)
                             firefox_profile.add_extension(str(extension))
+                    if 'mime' in request['firefox']:
+                        import shutil
+                        shutil.copy2(request['firefox']['mime'], firefox_profile.profile_dir)
                     if 'capabilities' in request['firefox']:
                         caps.update(request['firefox']['capabilities'])
                 selenium_proxy = self.setup_proxy()
