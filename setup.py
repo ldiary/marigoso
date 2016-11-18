@@ -38,9 +38,9 @@ setup(
         'notebook == 4.0.6',
         'ipywidgets == 4.1',
         'jupyter',
-        'pytest',
+        'pytest == 2.9.1',
         'pytest-testbook',
-        'selenium',
+        'selenium==2.53.6',
     ],
     packages=["marigoso"],
     entry_points={

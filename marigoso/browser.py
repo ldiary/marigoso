@@ -271,6 +271,10 @@ class BrowsingActions(Mouse, KeyBoard):
         self.log(self.url)
         return name
 
+    def load(self, trigger, landmark, timeout=30):
+        with self.page_will_reload(landmark, timeout):
+            self.press(trigger)
+
     @contextmanager
     def page_will_reload(self, coordinate, timeout=30):
         if isinstance(coordinate, str):
