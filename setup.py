@@ -33,7 +33,7 @@ setup(
     ],
     install_requires=[
         'pytest',
-        'selenium==2.53.6',
+        'selenium',
     ],
     packages=["marigoso"],
     entry_points={
